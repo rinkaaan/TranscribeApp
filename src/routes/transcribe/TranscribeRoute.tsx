@@ -22,7 +22,6 @@ export function Component() {
 
   useEffect(() => {
     if (finalTranscript.trim() === "") return
-    // appDispatch(transcribeActions.addFinalResult(finalTranscript))
     appDispatch(addFinalResult(finalTranscript))
     resetTranscript()
   }, [finalTranscript, resetTranscript])

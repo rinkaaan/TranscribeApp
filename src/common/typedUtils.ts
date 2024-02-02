@@ -65,3 +65,10 @@ export async function translate(text: string, sourceLang: string = "auto", targe
     throw new Error("Translation failed")
   }
 }
+
+export function scrollToBottom() {
+  window.scroll({
+    top: document.body.scrollHeight,
+    behavior: "smooth",
+  })
+}

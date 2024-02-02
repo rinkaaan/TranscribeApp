@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit"
 import { RootState } from "../../common/reducers"
 import "regenerator-runtime/runtime"
 import SpeechRecognition from "react-speech-recognition"
-import { translate } from "../../common/typedUtils.ts"
+import { scrollToBottom, translate } from "../../common/typedUtils.ts"
 import store from "../../common/store.ts"
 
 export interface Result {
@@ -55,6 +55,7 @@ export const transcribeSlice = createSlice({
     updateInterimResult: (state, action: PayloadAction<string>) => {
       if (!state.interimResult) return
       state.interimResult.text = action.payload
+      scrollToBottom()
     },
     startTranscribing: (state) => {
       state.transcribing = true
@@ -78,6 +79,7 @@ export const addFinalResult = createAsyncThunk(
     const timestamp = interimResult.seconds
     dispatch(transcribeActions.updateSlice({ interimResult: undefined }))
     dispatch(transcribeActions.updateSlice({ results: [...results, { seconds: timestamp, text, translation }] }))
+    scrollToBottom()
   }
 )
 
