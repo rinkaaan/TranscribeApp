@@ -8,3 +8,14 @@ thead * {
 thead {
     height: 4px !important;
 }
+
+.result {
+    display: block;
+    word-break: break-word;
+    white-space: normal;
+}
+
+.translation {
+    margin-top: 2px;
+    opacity: 0.5;
+}

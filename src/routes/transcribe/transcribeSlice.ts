@@ -1,11 +1,14 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit"
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit"
 import { RootState } from "../../common/reducers"
 import "regenerator-runtime/runtime"
 import SpeechRecognition from "react-speech-recognition"
+import { translate } from "../../common/typedUtils.ts"
+import store from "../../common/store.ts"
 
 export interface Result {
   seconds: number,
-  text: string
+  text: string,
+  translation: string,
 }
 
 export interface TranscribeState {
@@ -46,21 +49,12 @@ export const transcribeSlice = createSlice({
       state.interimResult = {
         seconds: diff,
         text: action.payload,
+        translation: "",
       }
     },
     updateInterimResult: (state, action: PayloadAction<string>) => {
       if (!state.interimResult) return
       state.interimResult.text = action.payload
-    },
-    addFinalResult: (state, action: PayloadAction<string>) => {
-      // Create a new result with same timestamp as last interim result
-      if (!state.interimResult) return
-      const timestamp = state.interimResult!.seconds
-      state.results.push({
-        seconds: timestamp,
-        text: action.payload,
-      })
-      state.interimResult = undefined
     },
     startTranscribing: (state) => {
       state.transcribing = true
@@ -74,6 +68,18 @@ export const transcribeSlice = createSlice({
     },
   },
 })
+
+export const addFinalResult = createAsyncThunk(
+  "transcribe/addFinalResult",
+  async (text: string, { dispatch }) => {
+    const translation = await translate(text, "en", "ja")
+    const { interimResult, results } = store.getState().transcribe
+    if (!interimResult) return
+    const timestamp = interimResult.seconds
+    dispatch(transcribeActions.updateSlice({ interimResult: undefined }))
+    dispatch(transcribeActions.updateSlice({ results: [...results, { seconds: timestamp, text, translation }] }))
+  }
+)
 
 export const transcribeReducer = transcribeSlice.reducer
 export const transcribeActions = transcribeSlice.actions

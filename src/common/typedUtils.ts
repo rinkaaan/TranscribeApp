@@ -45,3 +45,23 @@ export function formatSeconds(totalSeconds: number): string {
 
   return formattedTime
 }
+
+export async function translate(text: string, sourceLang: string = "auto", targetLang: string = "en"): Promise<string> {
+  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sourceLang}&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`
+
+  try {
+    const res = await fetch(url)
+    const json = await res.json()
+
+    const pieces = json[0]
+    let translatedText = ""
+
+    for (let i = 0; i < pieces.length; i++) {
+      translatedText += pieces[i][0]
+    }
+
+    return translatedText
+  } catch (error) {
+    throw new Error("Translation failed")
+  }
+}

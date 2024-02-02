@@ -1,7 +1,7 @@
 import { Box, Button, ContentLayout, Header, SpaceBetween, Table } from "@cloudscape-design/components"
 import "./style.css"
 import { useSelector } from "react-redux"
-import { transcribeActions, transcribeSelector } from "./transcribeSlice.ts"
+import { addFinalResult, transcribeActions, transcribeSelector } from "./transcribeSlice.ts"
 import { appDispatch } from "../../common/store.ts"
 import { useEffect } from "react"
 import { useSpeechRecognition } from "react-speech-recognition"
@@ -22,7 +22,8 @@ export function Component() {
 
   useEffect(() => {
     if (finalTranscript.trim() === "") return
-    appDispatch(transcribeActions.addFinalResult(finalTranscript))
+    // appDispatch(transcribeActions.addFinalResult(finalTranscript))
+    appDispatch(addFinalResult(finalTranscript))
     resetTranscript()
   }, [finalTranscript, resetTranscript])
 
@@ -59,11 +60,16 @@ export function Component() {
             {
               header: "",
               cell: item => formatSeconds(item.seconds),
-              width: "40px",
             },
             {
               header: "",
-              cell: item => item.text,
+              cell: item => (
+                <div className="result">
+                  <div>{item.text}</div>
+                  <div className="translation">{item.translation}</div>
+                </div>
+              ),
+              width: "100%",
             },
           ]}
           items={interimResult ? [...results, interimResult] : results}
