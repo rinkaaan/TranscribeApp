@@ -6,18 +6,12 @@ import { useSelector } from "react-redux"
 import "@cloudscape-design/global-styles/index.css"
 import "./app.css"
 import { Fragment } from "react"
-import { OpenAPI } from "../openapi-client"
 
 const router = createHashRouter([
   {
     path: "/",
     Component: MainLayout,
     errorElement: <MainLayoutError/>,
-    loader: async () => {
-      // OpenAPI.BASE = "http://127.0.0.1:34200"
-      OpenAPI.BASE = "http://65.21.126.28:34201"
-      return null
-    },
     children: [
       {
         path: "settings",
@@ -31,7 +25,7 @@ const router = createHashRouter([
       },
       {
         path: "*",
-        Component: () => <Navigate to="/albums"/>,
+        Component: () => <Navigate to="/transcribe"/>,
       }
     ],
   },

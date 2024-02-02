@@ -1,41 +1,30 @@
 import { Box, Button, ContentLayout, Header, SpaceBetween, Table } from "@cloudscape-design/components"
 import "./style.css"
-
-interface Item {
-  timestamp: string
-  text: string
-}
-
-const items: Item[] = [
-  {
-    timestamp: "0:00",
-    text: "First",
-  },
-  {
-    timestamp: "0:13",
-    text: "Second",
-  },
-  {
-    timestamp: "0:25",
-    text: "Third",
-  },
-  {
-    timestamp: "0:40",
-    text: "Fourth",
-  },
-  {
-    timestamp: "0:55",
-    text: "Fifth",
-  },
-  {
-    timestamp: "1:10",
-    text: "Sixth",
-  },
-]
-
-// const items: Item[] = []
+import { useSelector } from "react-redux"
+import { transcribeActions, transcribeSelector } from "./transcribeSlice.ts"
+import { appDispatch } from "../../common/store.ts"
+import { useEffect } from "react"
+import { useSpeechRecognition } from "react-speech-recognition"
+import { formatSeconds } from "../../common/typedUtils.ts"
 
 export function Component() {
+  const { results, transcribing, interimResult } = useSelector(transcribeSelector)
+  const { interimTranscript, finalTranscript, resetTranscript } = useSpeechRecognition()
+
+  useEffect(() => {
+    if (interimTranscript.trim() === "") return
+    if (!interimResult) {
+      appDispatch(transcribeActions.addInterimResult(interimTranscript))
+    } else {
+      appDispatch(transcribeActions.updateInterimResult(interimTranscript))
+    }
+  }, [interimResult, interimTranscript])
+
+  useEffect(() => {
+    if (finalTranscript.trim() === "") return
+    appDispatch(transcribeActions.addFinalResult(finalTranscript))
+    resetTranscript()
+  }, [finalTranscript, resetTranscript])
 
   return (
     <ContentLayout
@@ -43,7 +32,21 @@ export function Component() {
         <Header
           variant="h1"
           actions={
-            <Button iconName="microphone" />
+            transcribing ? (
+              <Button
+                iconName="microphone-off"
+                onClick={() => appDispatch(transcribeActions.stopTranscribing())}
+              >
+                Stop transcribing
+              </Button>
+            ) : (
+              <Button
+                iconName="microphone"
+                onClick={() => appDispatch(transcribeActions.startTranscribing())}
+              >
+                Start transcribing
+              </Button>
+            )
           }
         >
           Transcribe
@@ -55,7 +58,7 @@ export function Component() {
           columnDefinitions={[
             {
               header: "",
-              cell: item => item.timestamp,
+              cell: item => formatSeconds(item.seconds),
               width: "40px",
             },
             {
@@ -63,7 +66,7 @@ export function Component() {
               cell: item => item.text,
             },
           ]}
-          items={items}
+          items={interimResult ? [...results, interimResult] : results}
           loadingText="Loading resources"
           sortingDisabled
           empty={
@@ -74,7 +77,7 @@ export function Component() {
             >
               <SpaceBetween size="m">
                 <b>No words spoken yet</b>
-                <Button>Click to begin transcribing</Button>
+                {/*<Button>Click to begin transcribing</Button>*/}
               </SpaceBetween>
             </Box>
           }

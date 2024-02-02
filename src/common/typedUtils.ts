@@ -29,3 +29,19 @@ export function getApiErrorMessage(error: any) {
 }
 
 export type AsyncStatus = "pending" | "fulfilled" | "rejected"
+
+export function formatSeconds(totalSeconds: number): string {
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
+
+  // Format the time string
+  let formattedTime = ""
+  if (hours > 0) {
+    formattedTime = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
+  } else {
+    formattedTime = `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
+  }
+
+  return formattedTime
+}

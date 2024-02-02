@@ -81,7 +81,7 @@ export default function MainLayout() {
             <SideNavigation
               header={{
                 text: "Transcribe",
-                href: "/albums",
+                href: "/transcribe",
               }}
               onFollow={e => {
                 e.preventDefault()
