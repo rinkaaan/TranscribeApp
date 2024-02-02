@@ -12,13 +12,8 @@ import { prepareNotifications } from "../common/storeUtils"
 const items: SideNavigationProps.Item[] = [
   {
     type: "link",
-    text: "All Media",
-    href: "/media",
-  },
-  {
-    type: "link",
-    text: "Albums",
-    href: "/albums",
+    text: "Home",
+    href: "/transcribe",
   },
   {
     type: "link",
@@ -62,7 +57,7 @@ export default function MainLayout() {
     if (startingPath) {
       navigate(startingPath)
     }
-  }, [])
+  }, [navigate, startingPath])
 
   useEffect(() => {
     // Go from last to first crumb, set activeHref to the first one that matches items
@@ -85,7 +80,7 @@ export default function MainLayout() {
           navigation={
             <SideNavigation
               header={{
-                text: "Media",
+                text: "Transcribe",
                 href: "/albums",
               }}
               onFollow={e => {

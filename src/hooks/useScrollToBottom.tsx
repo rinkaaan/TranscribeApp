@@ -23,5 +23,5 @@ export default function useScrollToBottom(callback: () => void, disabled = false
 
     // Cleanup function to remove the event listener
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [callback])
+  }, [callback, disabled])
 }
