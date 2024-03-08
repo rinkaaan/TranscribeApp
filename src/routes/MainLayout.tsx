@@ -1,4 +1,4 @@
-import { Alert, AppLayout, Box, Button, Flashbar, Modal, SideNavigation, SideNavigationProps, SpaceBetween } from "@cloudscape-design/components"
+import { AppLayout, Flashbar, SideNavigation, SideNavigationProps } from "@cloudscape-design/components"
 import { Navigate, Outlet, ScrollRestoration, UIMatch, useLocation, useMatches, useNavigate } from "react-router-dom"
 import { Fragment, useEffect, useState } from "react"
 import CloudBreadcrumbGroup from "../components/CloudBreadcrumbGroup"
@@ -51,7 +51,7 @@ export default function MainLayout() {
   const matches = useMatches() as UIMatch<string, CrumbHandle>[]
   const crumbs = getCrumbs(matches)
   const [activeHref, setActiveHref] = useState<string | undefined>(undefined)
-  const { navigationOpen, notifications, dirty, dirtyModalVisible, dirtyRedirectUrl, startingPath } = useSelector(mainSelector)
+  const { navigationOpen, notifications, startingPath } = useSelector(mainSelector)
 
   useEffect(() => {
     if (startingPath) {
@@ -85,12 +85,7 @@ export default function MainLayout() {
               }}
               onFollow={e => {
                 e.preventDefault()
-                if (!dirty) {
-                  navigate(e.detail.href)
-                } else {
-                  const dirtyRedirectUrl = e.detail.href
-                  appDispatch(mainActions.updateSlice({ dirtyModalVisible: true, dirtyRedirectUrl }))
-                }
+                navigate(e.detail.href)
               }}
               activeHref={activeHref}
               items={items}
@@ -107,44 +102,6 @@ export default function MainLayout() {
           }
           toolsHide
         />
-        <Modal
-          visible={dirtyModalVisible}
-          header="Leave page"
-          closeAriaLabel="Close modal"
-          onDismiss={() => {
-            appDispatch(mainActions.updateSlice({ dirtyModalVisible: false }))
-          }}
-          footer={
-            <Box float="right">
-              <SpaceBetween direction="horizontal" size="xs">
-                <Button
-                  variant="link"
-                  onClick={() => {
-                    appDispatch(mainActions.updateSlice({ dirtyModalVisible: false }))
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={() => {
-                    if (dirtyRedirectUrl) {
-                      navigate(dirtyRedirectUrl)
-                    } else {
-                      navigate("/")
-                    }
-                  }}
-                >
-                  Leave
-                </Button>
-              </SpaceBetween>
-            </Box>
-          }
-        >
-          <Alert type="warning" statusIconAriaLabel="Warning">
-            Are you sure that you want to leave the current page? The changes that you made won't be saved.
-          </Alert>
-        </Modal>
       </Fragment>
     )
   }

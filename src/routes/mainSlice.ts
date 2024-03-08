@@ -6,9 +6,6 @@ import type { RootState } from "../common/reducers"
 export interface MainState {
   navigationOpen: boolean;
   notifications: Array<FlashbarProps.MessageDefinition>;
-  dirty: boolean;
-  dirtyModalVisible: boolean;
-  dirtyRedirectUrl?: string;
   lockScroll?: boolean;
   startingPath?: string;
 }
@@ -16,9 +13,6 @@ export interface MainState {
 const initialState: MainState = {
   navigationOpen: false,
   notifications: [],
-  dirty: false,
-  dirtyModalVisible: false,
-  dirtyRedirectUrl: undefined,
   lockScroll: false,
   startingPath: undefined,
 }
@@ -44,11 +38,6 @@ export const mainSlice = createSlice({
     },
     removeNotification(state, action: PayloadAction<string>) {
       state.notifications = state.notifications.filter(n => n.id !== action.payload)
-    },
-    resetDirty(state) {
-      state.dirty = false
-      state.dirtyModalVisible = false
-      state.dirtyRedirectUrl = undefined
     },
     resetSlice: () => {
       return initialState
