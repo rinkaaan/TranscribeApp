@@ -1,4 +1,4 @@
-import { createHashRouter, Navigate, RouterProvider } from "react-router-dom"
+import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom"
 import MainLayout from "./routes/MainLayout"
 import MainLayoutError from "./routes/MainLayoutError"
 import { mainSelector } from "./routes/mainSlice"
@@ -7,7 +7,7 @@ import "@cloudscape-design/global-styles/index.css"
 import "./app.css"
 import { Fragment } from "react"
 
-const router = createHashRouter([
+const router = createBrowserRouter([
   {
     path: "/",
     Component: MainLayout,

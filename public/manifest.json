@@ -1,6 +1,6 @@
 {
-  "short_name": "Transcriber",
-  "name": "Transcriber",
+  "short_name": "Transcribe",
+  "name": "Transcribe",
   "start_url": ".",
   "display": "standalone",
   "theme_color": "#000716",

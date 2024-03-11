@@ -26,6 +26,12 @@ export function Component() {
     resetTranscript()
   }, [finalTranscript, resetTranscript])
 
+  useEffect(() => {
+    return () => {
+      appDispatch(transcribeActions.stopTranscribing())
+    }
+  }, [])
+
   return (
     <ContentLayout
       header={

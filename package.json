@@ -4,17 +4,20 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --host",
+    "dev": "vite --host --port 34203",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint --fix --ext ts,tsx . --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview --host",
-    "prepare": "husky"
+    "preview": "vite preview --host --port 34203",
+    "prepare": "husky",
+    "restart": "npm run build && npm run preview"
   },
   "dependencies": {
     "@cloudscape-design/components": "^3.0.512",
     "@cloudscape-design/global-styles": "^1.0.21",
     "@reduxjs/toolkit": "^2.1.0",
+    "@types/js-cookie": "^3.0.6",
+    "js-cookie": "^3.0.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-redux": "^9.1.0",

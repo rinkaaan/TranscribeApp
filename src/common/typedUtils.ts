@@ -1,5 +1,6 @@
 import { format, isToday, isYesterday, parseISO } from "date-fns"
 import { v4 } from "uuid"
+import Cookies from "js-cookie"
 
 export function formatDate(inputDate?: string) {
   if (!inputDate) return null
@@ -65,4 +66,21 @@ export function scrollToBottom() {
     top: document.body.scrollHeight,
     behavior: "smooth",
   })
+}
+
+export interface SelectItem {
+  label: string
+  value: string
+}
+
+export function getJsonCookie(cookieName: string): any {
+  const cookie = Cookies.get(cookieName)
+  if (cookie) {
+    return JSON.parse(cookie)
+  }
+  return null
+}
+
+export function setJsonCookie(cookieName: string, value: any, options?: any) {
+  Cookies.set(cookieName, JSON.stringify(value), options ?? { expires: 365 })
 }

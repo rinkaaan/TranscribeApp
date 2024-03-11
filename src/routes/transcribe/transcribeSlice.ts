@@ -4,6 +4,8 @@ import "regenerator-runtime/runtime"
 import SpeechRecognition from "react-speech-recognition"
 import { scrollToBottom, translate } from "../../common/typedUtils.ts"
 import store from "../../common/store.ts"
+import languages from "../../common/languages.json"
+import Cookies from "js-cookie"
 
 export interface Result {
   seconds: number,
@@ -17,6 +19,18 @@ export interface TranscribeState {
   transcribing: boolean,
   lastResultTimestamp?: Date,
   previousEndSeconds?: number,
+  sourceLang: string,
+  destinationLang: string,
+}
+
+function validateLang(type: "source" | "destination"): string | null {
+  const lang = Cookies.get(`${type}Lang`)
+  if (lang && Object.keys(languages).includes(lang)) {
+    return lang
+  } else {
+    Cookies.remove(`${type}Lang`)
+    return null
+  }
 }
 
 const initialState: TranscribeState = {
@@ -25,6 +39,8 @@ const initialState: TranscribeState = {
   transcribing: false,
   lastResultTimestamp: undefined,
   previousEndSeconds: undefined,
+  sourceLang: validateLang("source") || "Japanese",
+  destinationLang: validateLang("destination") || "English",
 }
 
 export const transcribeSlice = createSlice({
@@ -59,7 +75,8 @@ export const transcribeSlice = createSlice({
     },
     startTranscribing: (state) => {
       state.transcribing = true
-      SpeechRecognition.startListening({ continuous: true, language: "en-US" })
+      const language = languages[state.sourceLang]["web_speech_api_code"]
+      SpeechRecognition.startListening({ continuous: true, language })
       state.lastResultTimestamp = new Date()
     },
     stopTranscribing: (state) => {
@@ -73,8 +90,10 @@ export const transcribeSlice = createSlice({
 export const addFinalResult = createAsyncThunk(
   "transcribe/addFinalResult",
   async (text: string, { dispatch }) => {
-    const translation = await translate(text, "en", "ja")
-    const { interimResult, results } = store.getState().transcribe
+    const { interimResult, results, sourceLang, destinationLang } = store.getState().transcribe
+    const srcLangCode = languages[sourceLang]["google_translate_code"]
+    const destLangCode = languages[destinationLang]["google_translate_code"]
+    const translation = await translate(text, srcLangCode, destLangCode)
     if (!interimResult) return
     const timestamp = interimResult.seconds
     dispatch(transcribeActions.updateSlice({ interimResult: undefined }))
