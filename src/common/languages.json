@@ -1,27 +1,23 @@
 {
-  "German": {
-    "web_speech_api_code": "de-De",
-    "google_translate_code": "de"
-  },
   "English": {
     "web_speech_api_code": "en-US",
     "google_translate_code": "en"
-  },
-  "Spanish": {
-    "web_speech_api_code": "es-ES",
-    "google_translate_code": "es"
   },
   "French": {
     "web_speech_api_code": "fr-FR",
     "google_translate_code": "fr"
   },
+  "German": {
+    "web_speech_api_code": "de-De",
+    "google_translate_code": "de"
+  },
   "Italian": {
     "web_speech_api_code": "it-IT",
     "google_translate_code": "it"
   },
-  "Russian": {
-    "web_speech_api_code": "ru-RU",
-    "google_translate_code": "ru"
+  "Japanese": {
+    "web_speech_api_code": "ja-JP",
+    "google_translate_code": "ja"
   },
   "Korean": {
     "web_speech_api_code": "ko-KR",
@@ -35,8 +31,12 @@
     "web_speech_api_code": "yue-Hant-HK",
     "google_translate_code": "zh"
   },
-  "Japanese": {
-    "web_speech_api_code": "ja-JP",
-    "google_translate_code": "ja"
+  "Russian": {
+    "web_speech_api_code": "ru-RU",
+    "google_translate_code": "ru"
+  },
+  "Spanish": {
+    "web_speech_api_code": "es-ES",
+    "google_translate_code": "es"
   }
 }
