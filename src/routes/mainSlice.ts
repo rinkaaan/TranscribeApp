@@ -2,12 +2,16 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit"
 import { FlashbarProps } from "@cloudscape-design/components"
 import { uuid } from "../common/typedUtils"
 import type { RootState } from "../common/reducers"
+import { ReactNode } from "react"
 
 export interface MainState {
   navigationOpen: boolean;
   notifications: Array<FlashbarProps.MessageDefinition>;
   lockScroll?: boolean;
   startingPath?: string;
+  toolsHidden: boolean;
+  toolsOpen: boolean;
+  tools: ReactNode;
 }
 
 const initialState: MainState = {
@@ -15,6 +19,9 @@ const initialState: MainState = {
   notifications: [],
   lockScroll: false,
   startingPath: undefined,
+  toolsHidden: true,
+  toolsOpen: false,
+  tools: null,
 }
 
 type Notification = Pick<FlashbarProps.MessageDefinition, "type" | "content">
