@@ -1,14 +1,16 @@
-import { Box, Button, ContentLayout, Header, SpaceBetween, Table } from "@cloudscape-design/components"
+import { Box, Button, ContentLayout, CopyToClipboard, Header, HelpPanel, SpaceBetween, Table } from "@cloudscape-design/components"
 import "./style.css"
 import { useSelector } from "react-redux"
 import { addFinalResult, transcribeActions, transcribeSelector } from "./transcribeSlice.ts"
 import { appDispatch } from "../../common/store.ts"
-import { useEffect } from "react"
+import { ReactNode, useEffect, useState } from "react"
 import { useSpeechRecognition } from "react-speech-recognition"
 import { formatSeconds } from "../../common/typedUtils.ts"
+import { mainActions, mainSelector } from "../mainSlice.ts"
 
 export function Component() {
-  const { results, transcribing, interimResult } = useSelector(transcribeSelector)
+  const { toolsOpen } = useSelector(mainSelector)
+  const { results, transcribing, interimResult, meetingCode } = useSelector(transcribeSelector)
   const { interimTranscript, finalTranscript, resetTranscript } = useSpeechRecognition()
 
   useEffect(() => {
@@ -26,36 +28,80 @@ export function Component() {
     resetTranscript()
   }, [finalTranscript, resetTranscript])
 
+  const [transcribeButton, setTranscribeButton] = useState<ReactNode>(null)
+  const copyMeetingUrlButton = (
+    <CopyToClipboard
+      copyButtonText="Copy meeting URL"
+      copyErrorText="Failed to copy meeting URL"
+      copySuccessText="Meeting URL copied"
+      textToCopy={window.location.href}
+    />
+  )
+
   useEffect(() => {
+
+    if (transcribing) {
+      setTranscribeButton(
+        (
+          <Button
+            iconName="microphone-off"
+            onClick={() => appDispatch(transcribeActions.stopTranscribing())}
+          >
+            Stop transcribing
+          </Button>
+        )
+      )
+    } else {
+      setTranscribeButton(
+        <Button
+          iconName="microphone"
+          onClick={() => appDispatch(transcribeActions.startTranscribing())}
+        >
+          Start transcribing
+        </Button>
+      )
+    }
+  }, [transcribing])
+
+  useEffect(() => {
+    const url = new URL(window.location.href)
+    url.searchParams.set("code", meetingCode)
+    window.history.replaceState({}, "", url)
+
     return () => {
       appDispatch(transcribeActions.stopTranscribing())
     }
   }, [])
+
+  useEffect(() => {
+    const tools = (
+      <HelpPanel header={<h2>Actions</h2>}>
+        <SpaceBetween size="s" direction="horizontal">
+          {copyMeetingUrlButton}
+          {transcribeButton}
+        </SpaceBetween>
+      </HelpPanel>
+    )
+
+    appDispatch(mainActions.updateSlice({ tools, toolsHidden: false }))
+
+    return () => {
+      appDispatch(mainActions.updateSlice({ toolsHidden: true }))
+    }
+  }, [transcribeButton])
 
   return (
     <ContentLayout
       header={
         <Header
           variant="h1"
-          actions={
-            transcribing ? (
-              <Button
-                iconName="microphone-off"
-                onClick={() => appDispatch(transcribeActions.stopTranscribing())}
-              >
-                Stop transcribing
-              </Button>
-            ) : (
-              <Button
-                iconName="microphone"
-                onClick={() => appDispatch(transcribeActions.startTranscribing())}
-              >
-                Start transcribing
-              </Button>
-            )
-          }
+          actions={!toolsOpen && (
+            <SpaceBetween size="s" direction="horizontal">
+              {transcribeButton}
+            </SpaceBetween>
+          )}
         >
-          Transcribe
+          Transcribe | {meetingCode}
         </Header>
       }
     >
@@ -88,7 +134,9 @@ export function Component() {
             >
               <SpaceBetween size="m">
                 <b>No words spoken yet</b>
+                Share the meeting URL with others to let them join the transcription session.
                 {/*<Button>Click to begin transcribing</Button>*/}
+                {copyMeetingUrlButton}
               </SpaceBetween>
             </Box>
           }

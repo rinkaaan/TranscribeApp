@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit"
 import { RootState } from "../../common/reducers"
 import "regenerator-runtime/runtime"
 import SpeechRecognition from "react-speech-recognition"
-import { scrollToBottom, translate } from "../../common/typedUtils.ts"
+import { scrollToBottom, shortUuid, translate } from "../../common/typedUtils.ts"
 import store from "../../common/store.ts"
 import languages from "../../common/languages.json"
 import Cookies from "js-cookie"
@@ -11,16 +11,6 @@ export interface Result {
   seconds: number,
   text: string,
   translation: string,
-}
-
-export interface TranscribeState {
-  results: Array<Result>,
-  interimResult?: Result,
-  transcribing: boolean,
-  lastResultTimestamp?: Date,
-  previousEndSeconds?: number,
-  sourceLang: string,
-  destinationLang: string,
 }
 
 function validateLang(type: "source" | "destination"): string | null {
@@ -33,6 +23,17 @@ function validateLang(type: "source" | "destination"): string | null {
   }
 }
 
+export interface TranscribeState {
+  results: Array<Result>,
+  interimResult?: Result,
+  transcribing: boolean,
+  lastResultTimestamp?: Date,
+  previousEndSeconds?: number,
+  sourceLang: string,
+  destinationLang: string,
+  meetingCode: string,
+}
+
 const initialState: TranscribeState = {
   results: [],
   interimResult: undefined,
@@ -41,6 +42,7 @@ const initialState: TranscribeState = {
   previousEndSeconds: undefined,
   sourceLang: validateLang("source") || "Japanese",
   destinationLang: validateLang("destination") || "English",
+  meetingCode: shortUuid(),
 }
 
 export const transcribeSlice = createSlice({

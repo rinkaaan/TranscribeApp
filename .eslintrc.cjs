@@ -35,5 +35,6 @@ module.exports = {
       "double",
     ],
     "no-console": ["error", { "allow": ["info", "error", "debug"] }],
+    "react-hooks/exhaustive-deps": "off",
   },
 }

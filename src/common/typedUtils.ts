@@ -23,6 +23,10 @@ export function uuid() {
   return v4()
 }
 
+export function shortUuid() {
+  return v4().split("-")[0]
+}
+
 export type AsyncStatus = "pending" | "fulfilled" | "rejected"
 
 export function formatSeconds(totalSeconds: number): string {

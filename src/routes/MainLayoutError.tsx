@@ -24,7 +24,7 @@ export default function MainLayoutError() {
         }),
       )
     }
-    navigate("/#/media", { replace: true })
+    navigate("/transcribe", { replace: true })
   }, [error, navigate])
 
   return null
