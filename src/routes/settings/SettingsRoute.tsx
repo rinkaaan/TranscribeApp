@@ -1,17 +1,19 @@
-import { Button, Container, ContentLayout, Form, FormField, Header, HelpPanel, Select, SpaceBetween } from "@cloudscape-design/components"
+import { Button, Container, ContentLayout, Form, FormField, Header, HelpPanel, Input, Select, SpaceBetween } from "@cloudscape-design/components"
 import { useEffect, useState } from "react"
 import languages from "../../common/languages.json"
 import { useSelector } from "react-redux"
 import { transcribeActions, transcribeSelector } from "../transcribe/transcribeSlice.ts"
 import { appDispatch } from "../../common/store.ts"
-import { mainActions } from "../mainSlice.ts"
+import { mainActions, mainSelector } from "../mainSlice.ts"
 import Cookies from "js-cookie"
 import { ExternalLinkGroup } from "../../components/external-link-group.tsx"
 
 export function Component() {
+  const { username: username0 } = useSelector(mainSelector)
   const { sourceLang: sourceLang0, destinationLang: destinationLang0 } = useSelector(transcribeSelector)
   const [sourceLang, setSourceLang] = useState<string>(sourceLang0)
   const [destinationLang, setDestinationLang] = useState<string>(destinationLang0)
+  const [username, setUsername] = useState<string>(username0)
   const [changed, setChanged] = useState(false)
   const languageOptions = Object.keys(languages).map((key) => ({ label: key, value: key }))
 
@@ -24,8 +26,10 @@ export function Component() {
       return
     }
     appDispatch(transcribeActions.updateSlice({ sourceLang, destinationLang }))
+    appDispatch(mainActions.updateSlice({ username }))
     Cookies.set("sourceLang", sourceLang, { expires: 365 })
     Cookies.set("destinationLang", destinationLang, { expires: 365 })
+    Cookies.set("username", username, { expires: 365 })
     setChanged(false)
   }
 
@@ -40,22 +44,26 @@ export function Component() {
     <HelpPanel
       header={<h2>Transcribing System Audio</h2>}
       footer={
-      <ExternalLinkGroup
-        items={[
-          {
-            href: "https://www.howtogeek.com/39532/how-to-enable-stereo-mix-in-windows-7-to-record-audio/",
-            text: "Enabling stereo mix on Windows",
-          },
-          {
-            href: "https://wikis.utexas.edu/display/comm/How+to+set+up+BlackHole+Audio+on+a+Mac",
-            text: "Setting up BlackHole on Mac",
-          },
-        ]}
-      />
-    }
+        <ExternalLinkGroup
+          items={[
+            {
+              href: "https://www.howtogeek.com/39532/how-to-enable-stereo-mix-in-windows-7-to-record-audio/",
+              text: "Enabling stereo mix on Windows",
+            },
+            {
+              href: "https://wikis.utexas.edu/display/comm/How+to+set+up+BlackHole+Audio+on+a+Mac",
+              text: "Setting up BlackHole on Mac",
+            },
+          ]}
+        />
+      }
     >
-      <SpaceBetween size="s" direction="horizontal">
-        Although Transcribe is mainly intended for use with spoken audio received through a microphone, you can also transcribe audio from your computer by enabling stereo mix for Windows computers or using something like BlackHole for Macs.
+      <SpaceBetween
+        size="s"
+        direction="horizontal"
+      >
+        Although Transcribe is mainly intended for use with spoken audio received through a microphone, you can also transcribe audio from your computer by enabling stereo mix for Windows computers or
+        using something like BlackHole for Macs.
       </SpaceBetween>
     </HelpPanel>
   )
@@ -65,7 +73,7 @@ export function Component() {
     return () => {
       appDispatch(mainActions.updateSlice({ toolsHidden: true }))
     }
-  })
+  }, [])
 
   return (
     <ContentLayout
@@ -73,12 +81,14 @@ export function Component() {
         <Header variant="h1">Settings</Header>
       }
     >
-      <Form actions={
-        <Button
-          disabled={!changed}
-          onClick={saveChanges}
-        >Save changes</Button>
-      }>
+      <Form
+        actions={
+          <Button
+            disabled={!changed}
+            onClick={saveChanges}
+          >Save changes</Button>
+        }
+      >
         <SpaceBetween size="l">
           <Container header={<Header variant="h2">Language</Header>}>
             <form onSubmit={(e) => e.preventDefault()}>
@@ -107,8 +117,20 @@ export function Component() {
               </SpaceBetween>
             </form>
           </Container>
+          <Container header={<Header variant="h2">Profile</Header>}>
+
+            <FormField label="Username">
+              <Input
+                value={username}
+                onChange={({ detail }) => {
+                  setUsername(detail.value)
+                  setChanged(true)
+                }}
+              />
+            </FormField>
+          </Container>
         </SpaceBetween>
       </Form>
     </ContentLayout>
-)
+  )
 }

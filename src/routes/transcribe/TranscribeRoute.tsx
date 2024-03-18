@@ -5,10 +5,13 @@ import { addFinalResult, transcribeActions, transcribeSelector } from "./transcr
 import { appDispatch } from "../../common/store.ts"
 import { ReactNode, useEffect, useState } from "react"
 import { useSpeechRecognition } from "react-speech-recognition"
-import { formatSeconds } from "../../common/typedUtils.ts"
+import { formatSeconds, shortUuid } from "../../common/typedUtils.ts"
 import { mainActions, mainSelector } from "../mainSlice.ts"
+import { socket } from "../../common/clients.ts"
+import { useLocation } from "react-router-dom"
 
 export function Component() {
+  const location = useLocation()
   const { toolsOpen } = useSelector(mainSelector)
   const { results, transcribing, interimResult, meetingCode } = useSelector(transcribeSelector)
   const { interimTranscript, finalTranscript, resetTranscript } = useSpeechRecognition()
@@ -37,9 +40,16 @@ export function Component() {
       textToCopy={window.location.href}
     />
   )
+  const newMeetingButton = (
+    <Button
+      iconName="add-plus"
+      onClick={newMeeting}
+    >
+      New meeting
+    </Button>
+  )
 
   useEffect(() => {
-
     if (transcribing) {
       setTranscribeButton(
         (
@@ -64,10 +74,23 @@ export function Component() {
   }, [transcribing])
 
   useEffect(() => {
+    socket.emit("join", meetingCode)
     const url = new URL(window.location.href)
     url.searchParams.set("code", meetingCode)
     window.history.replaceState({}, "", url)
+  }, [location])
 
+  function newMeeting() {
+    const newCode = shortUuid()
+    socket.emit("join", meetingCode)
+    const url = new URL(window.location.href)
+    url.searchParams.set("code", newCode)
+    window.history.replaceState({}, "", url)
+    appDispatch(transcribeActions.resetTranscribing())
+    appDispatch(transcribeActions.updateSlice({ meetingCode: newCode }))
+  }
+
+  useEffect(() => {
     return () => {
       appDispatch(transcribeActions.stopTranscribing())
     }
@@ -77,8 +100,9 @@ export function Component() {
     const tools = (
       <HelpPanel header={<h2>Actions</h2>}>
         <SpaceBetween size="s" direction="horizontal">
-          {copyMeetingUrlButton}
           {transcribeButton}
+          {copyMeetingUrlButton}
+          {newMeetingButton}
         </SpaceBetween>
       </HelpPanel>
     )
@@ -135,8 +159,8 @@ export function Component() {
               <SpaceBetween size="m">
                 <b>No words spoken yet</b>
                 Share the meeting URL with others to let them join the transcription session.
-                {/*<Button>Click to begin transcribing</Button>*/}
                 {copyMeetingUrlButton}
+                {newMeetingButton}
               </SpaceBetween>
             </Box>
           }

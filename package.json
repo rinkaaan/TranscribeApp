@@ -26,6 +26,7 @@
     "react-router-dom": "^6.21.3",
     "react-speech-recognition": "^3.10.0",
     "regenerator-runtime": "^0.14.1",
+    "socket.io-client": "^4.7.5",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

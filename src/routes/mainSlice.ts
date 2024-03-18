@@ -3,6 +3,7 @@ import { FlashbarProps } from "@cloudscape-design/components"
 import { uuid } from "../common/typedUtils"
 import type { RootState } from "../common/reducers"
 import { ReactNode } from "react"
+import Cookies from "js-cookie"
 
 export interface MainState {
   navigationOpen: boolean;
@@ -12,6 +13,7 @@ export interface MainState {
   toolsHidden: boolean;
   toolsOpen: boolean;
   tools: ReactNode;
+  username: string;
 }
 
 const initialState: MainState = {
@@ -22,6 +24,7 @@ const initialState: MainState = {
   toolsHidden: true,
   toolsOpen: false,
   tools: null,
+  username: Cookies.get("username") || "anonymous",
 }
 
 type Notification = Pick<FlashbarProps.MessageDefinition, "type" | "content">

@@ -23,6 +23,12 @@ function validateLang(type: "source" | "destination"): string | null {
   }
 }
 
+function getMeetingCode() {
+  const urlParams = new URLSearchParams(window.location.search)
+  const code = urlParams.get("code")
+  return code || shortUuid()
+}
+
 export interface TranscribeState {
   results: Array<Result>,
   interimResult?: Result,
@@ -42,7 +48,7 @@ const initialState: TranscribeState = {
   previousEndSeconds: undefined,
   sourceLang: validateLang("source") || "Japanese",
   destinationLang: validateLang("destination") || "English",
-  meetingCode: shortUuid(),
+  meetingCode: getMeetingCode(),
 }
 
 export const transcribeSlice = createSlice({
@@ -86,6 +92,12 @@ export const transcribeSlice = createSlice({
       state.previousEndSeconds = state.results[state.results.length - 1]?.seconds
       SpeechRecognition.stopListening()
     },
+    resetTranscribing: (state) => {
+      const keys = ["results", "interimResult", "transcribing", "lastResultTimestamp", "previousEndSeconds"]
+      keys.forEach((key) => {
+        state[key] = initialState[key]
+      })
+    }
   },
 })
 
