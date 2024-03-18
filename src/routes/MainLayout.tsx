@@ -10,6 +10,7 @@ import { CrumbHandle } from "../App"
 import { prepareNotifications } from "../common/storeUtils"
 import { socketManager } from "../common/clients.ts"
 import { transcribeSelector } from "./transcribe/transcribeSlice.ts"
+import JoinMeetingModal from "./transcribe/JoinMeetingModal.tsx"
 
 const items: SideNavigationProps.Item[] = [
   {
@@ -117,6 +118,7 @@ export default function MainLayout() {
             appDispatch(mainActions.updateSlice({ toolsOpen: e.detail.open }))
           }}
         />
+        <JoinMeetingModal />
       </Fragment>
     )
   }

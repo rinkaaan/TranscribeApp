@@ -38,6 +38,8 @@ export interface TranscribeState {
   sourceLang: string,
   destinationLang: string,
   meetingCode: string,
+  joinMeetingModalOpen: boolean,
+  newMeetingCode: string,
 }
 
 const initialState: TranscribeState = {
@@ -48,6 +50,8 @@ const initialState: TranscribeState = {
   sourceLang: validateLang("source") || "Japanese",
   destinationLang: validateLang("destination") || "English",
   meetingCode: getMeetingCode(),
+  joinMeetingModalOpen: false,
+  newMeetingCode: "",
 }
 
 export const transcribeSlice = createSlice({
@@ -92,7 +96,13 @@ export const transcribeSlice = createSlice({
       const { username, text, translation } = action.payload
       state.results.push({ username, text, translation })
       scrollToBottom()
-    }
+    },
+    resetMeetingModalState: (state) => {
+      const keysToReset = ["newMeetingCode", "joinMeetingModalOpen"]
+      keysToReset.forEach(key => {
+        state[key] = initialState[key]
+      })
+    },
   },
 })
 
@@ -105,10 +115,24 @@ export const addFinalResult = createAsyncThunk(
     const destLangCode = languages[destinationLang]["google_translate_code"]
     const translation = await translate(text, srcLangCode, destLangCode)
     if (!interimResult) return
-    dispatch(transcribeActions.updateSlice({ interimResult: undefined }))
-    // dispatch(transcribeActions.updateSlice({ results: [...results, { username, text, translation }] }))
     socketManager.sendTranscription({ room: meetingCode, text, username, translation })
+    dispatch(transcribeActions.updateSlice({ interimResult: undefined }))
     scrollToBottom()
+  }
+)
+
+export const joinMeeting = createAsyncThunk(
+  "transcribe/joinMeeting",
+  async (meetingCode: string, { dispatch }) => {
+    const { username } = store.getState().main
+    const oldMeetingCode = store.getState().transcribe.meetingCode
+    socketManager.leaveRoom({ room: oldMeetingCode, username })
+    socketManager.joinRoom({ room: meetingCode, username })
+    const url = new URL(window.location.href)
+    url.searchParams.set("code", meetingCode)
+    window.history.replaceState({}, "", url)
+    dispatch(transcribeActions.resetTranscribing())
+    dispatch(transcribeActions.updateSlice({ meetingCode }))
   }
 )
 

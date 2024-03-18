@@ -1,7 +1,7 @@
 import { Box, Button, ContentLayout, CopyToClipboard, Header, HelpPanel, SpaceBetween, Table } from "@cloudscape-design/components"
 import "./style.css"
 import { useSelector } from "react-redux"
-import { addFinalResult, transcribeActions, transcribeSelector } from "./transcribeSlice.ts"
+import { addFinalResult, joinMeeting, transcribeActions, transcribeSelector } from "./transcribeSlice.ts"
 import { appDispatch } from "../../common/store.ts"
 import { ReactNode, useEffect, useState } from "react"
 import { useSpeechRecognition } from "react-speech-recognition"
@@ -49,6 +49,14 @@ export function Component() {
       New meeting
     </Button>
   )
+  const joinMeetingButton = (
+    <Button
+      iconName="angle-right"
+      onClick={() => appDispatch(transcribeActions.updateSlice({ joinMeetingModalOpen: true }))}
+    >
+      Join meeting
+    </Button>
+  )
 
   useEffect(() => {
     if (transcribing) {
@@ -81,14 +89,8 @@ export function Component() {
   }, [location])
 
   function newMeeting() {
-    socketManager.leaveRoom({ room: meetingCode, username })
     const newCode = shortUuid()
-    socketManager.joinRoom({ room: newCode, username })
-    const url = new URL(window.location.href)
-    url.searchParams.set("code", newCode)
-    window.history.replaceState({}, "", url)
-    appDispatch(transcribeActions.resetTranscribing())
-    appDispatch(transcribeActions.updateSlice({ meetingCode: newCode }))
+    appDispatch(joinMeeting(newCode))
   }
 
   useEffect(() => {
@@ -100,7 +102,7 @@ export function Component() {
       socketManager.receiveMessage((message: SocketMessagePayload) => {
         appDispatch(transcribeActions.addFinalResult({ text: message.text, username: message.username }))
       })
-    }, 500)
+    }, 3000)
 
     return () => {
       appDispatch(transcribeActions.stopTranscribing())
@@ -114,6 +116,7 @@ export function Component() {
           {transcribeButton}
           {copyMeetingUrlButton}
           {newMeetingButton}
+          {joinMeetingButton}
         </SpaceBetween>
       </HelpPanel>
     )
@@ -172,6 +175,7 @@ export function Component() {
                 Share the meeting URL with others to let them join the transcription session.
                 {copyMeetingUrlButton}
                 {newMeetingButton}
+                {joinMeetingButton}
               </SpaceBetween>
             </Box>
           }
