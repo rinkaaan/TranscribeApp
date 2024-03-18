@@ -1,7 +1,3 @@
-import { io } from "socket.io-client"
+import { SocketManager } from "./SocketManager.ts"
 
-export const socket = io(import.meta.env.VITE_API_URL)
-
-socket.on("connect", () => {
-  console.info("connected")
-})
+export const socketManager = new SocketManager()

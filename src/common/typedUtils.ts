@@ -88,3 +88,4 @@ export function getJsonCookie(cookieName: string): any {
 export function setJsonCookie(cookieName: string, value: any, options?: any) {
   Cookies.set(cookieName, JSON.stringify(value), options ?? { expires: 365 })
 }
+

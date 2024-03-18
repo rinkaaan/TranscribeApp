@@ -8,6 +8,8 @@ import { mainActions, mainSelector } from "./mainSlice"
 import { CrumbHandle } from "../App"
 
 import { prepareNotifications } from "../common/storeUtils"
+import { socketManager } from "../common/clients.ts"
+import { transcribeSelector } from "./transcribe/transcribeSlice.ts"
 
 const items: SideNavigationProps.Item[] = [
   {
@@ -51,7 +53,8 @@ export default function MainLayout() {
   const matches = useMatches() as UIMatch<string, CrumbHandle>[]
   const crumbs = getCrumbs(matches)
   const [activeHref, setActiveHref] = useState<string | undefined>(undefined)
-  const { navigationOpen, notifications, startingPath, toolsOpen, tools, toolsHidden } = useSelector(mainSelector)
+  const { navigationOpen, notifications, startingPath, toolsOpen, tools, toolsHidden, username } = useSelector(mainSelector)
+  const { meetingCode } = useSelector(transcribeSelector)
 
   useEffect(() => {
     if (startingPath) {
@@ -69,6 +72,13 @@ export default function MainLayout() {
       }
     }
   }, [crumbs])
+
+  useEffect(() => {
+    socketManager.joinRoom({ room: meetingCode, username })
+    return () => {
+      socketManager.leaveRoom({ room: meetingCode, username })
+    }
+  }, [])
 
   if (location.pathname === "/") {
     return <Navigate to="/media" replace/>

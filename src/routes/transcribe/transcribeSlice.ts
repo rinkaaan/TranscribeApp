@@ -6,11 +6,12 @@ import { scrollToBottom, shortUuid, translate } from "../../common/typedUtils.ts
 import store from "../../common/store.ts"
 import languages from "../../common/languages.json"
 import Cookies from "js-cookie"
+import { socketManager } from "../../common/clients.ts"
 
 export interface Result {
-  seconds: number,
+  username: string,
   text: string,
-  translation: string,
+  translation?: string,
 }
 
 function validateLang(type: "source" | "destination"): string | null {
@@ -33,7 +34,6 @@ export interface TranscribeState {
   results: Array<Result>,
   interimResult?: Result,
   transcribing: boolean,
-  lastResultTimestamp?: Date,
   previousEndSeconds?: number,
   sourceLang: string,
   destinationLang: string,
@@ -44,7 +44,6 @@ const initialState: TranscribeState = {
   results: [],
   interimResult: undefined,
   transcribing: false,
-  lastResultTimestamp: undefined,
   previousEndSeconds: undefined,
   sourceLang: validateLang("source") || "Japanese",
   destinationLang: validateLang("destination") || "English",
@@ -61,18 +60,11 @@ export const transcribeSlice = createSlice({
     resetSlice: () => {
       return initialState
     },
-    addInterimResult: (state, action: PayloadAction<string>) => {
-      // If first result, set firstResultTimestamp
-      const timestamp = new Date()
-      // Calculate timestamp - lastResultTimestamp in seconds
-      let diff = timestamp.getTime() - state.lastResultTimestamp!.getTime()
-      diff = Math.round(diff / 1000)
-      if (state.previousEndSeconds) {
-        diff += state.previousEndSeconds
-      }
+    addInterimResult: (state, action: PayloadAction<{ text: string, username: string }>) => {
+      const { username, text } = action.payload
       state.interimResult = {
-        seconds: diff,
-        text: action.payload,
+        username,
+        text,
         translation: "",
       }
     },
@@ -85,11 +77,9 @@ export const transcribeSlice = createSlice({
       state.transcribing = true
       const language = languages[state.sourceLang]["web_speech_api_code"]
       SpeechRecognition.startListening({ continuous: true, language })
-      state.lastResultTimestamp = new Date()
     },
     stopTranscribing: (state) => {
       state.transcribing = false
-      state.previousEndSeconds = state.results[state.results.length - 1]?.seconds
       SpeechRecognition.stopListening()
     },
     resetTranscribing: (state) => {
@@ -97,21 +87,27 @@ export const transcribeSlice = createSlice({
       keys.forEach((key) => {
         state[key] = initialState[key]
       })
+    },
+    addFinalResult: (state, action: PayloadAction<{ text: string, username: string, translation?: string }>) => {
+      const { username, text, translation } = action.payload
+      state.results.push({ username, text, translation })
+      scrollToBottom()
     }
   },
 })
 
 export const addFinalResult = createAsyncThunk(
   "transcribe/addFinalResult",
-  async (text: string, { dispatch }) => {
-    const { interimResult, results, sourceLang, destinationLang } = store.getState().transcribe
+  async ({ text }: { text: string }, { dispatch }) => {
+    const { username } = store.getState().main
+    const { interimResult, sourceLang, destinationLang, meetingCode } = store.getState().transcribe
     const srcLangCode = languages[sourceLang]["google_translate_code"]
     const destLangCode = languages[destinationLang]["google_translate_code"]
     const translation = await translate(text, srcLangCode, destLangCode)
     if (!interimResult) return
-    const timestamp = interimResult.seconds
     dispatch(transcribeActions.updateSlice({ interimResult: undefined }))
-    dispatch(transcribeActions.updateSlice({ results: [...results, { seconds: timestamp, text, translation }] }))
+    // dispatch(transcribeActions.updateSlice({ results: [...results, { username, text, translation }] }))
+    socketManager.sendTranscription({ room: meetingCode, text, username, translation })
     scrollToBottom()
   }
 )

@@ -24,7 +24,7 @@ const initialState: MainState = {
   toolsHidden: true,
   toolsOpen: false,
   tools: null,
-  username: Cookies.get("username") || "anonymous",
+  username: Cookies.get("username") || "Anonymous",
 }
 
 type Notification = Pick<FlashbarProps.MessageDefinition, "type" | "content">

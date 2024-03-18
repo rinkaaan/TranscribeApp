@@ -7,10 +7,11 @@ import { appDispatch } from "../../common/store.ts"
 import { mainActions, mainSelector } from "../mainSlice.ts"
 import Cookies from "js-cookie"
 import { ExternalLinkGroup } from "../../components/external-link-group.tsx"
+import { socketManager } from "../../common/clients.ts"
 
 export function Component() {
   const { username: username0 } = useSelector(mainSelector)
-  const { sourceLang: sourceLang0, destinationLang: destinationLang0 } = useSelector(transcribeSelector)
+  const { sourceLang: sourceLang0, destinationLang: destinationLang0, meetingCode } = useSelector(transcribeSelector)
   const [sourceLang, setSourceLang] = useState<string>(sourceLang0)
   const [destinationLang, setDestinationLang] = useState<string>(destinationLang0)
   const [username, setUsername] = useState<string>(username0)
@@ -26,7 +27,14 @@ export function Component() {
       return
     }
     appDispatch(transcribeActions.updateSlice({ sourceLang, destinationLang }))
-    appDispatch(mainActions.updateSlice({ username }))
+    if (username !== username0) {
+      appDispatch(mainActions.updateSlice({ username }))
+      socketManager.sendMessage({
+        room: meetingCode,
+        username: "Server",
+        text: `${username0} changed their username to ${username}`,
+      })
+    }
     Cookies.set("sourceLang", sourceLang, { expires: 365 })
     Cookies.set("destinationLang", destinationLang, { expires: 365 })
     Cookies.set("username", username, { expires: 365 })

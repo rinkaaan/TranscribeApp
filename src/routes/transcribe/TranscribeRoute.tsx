@@ -5,21 +5,22 @@ import { addFinalResult, transcribeActions, transcribeSelector } from "./transcr
 import { appDispatch } from "../../common/store.ts"
 import { ReactNode, useEffect, useState } from "react"
 import { useSpeechRecognition } from "react-speech-recognition"
-import { formatSeconds, shortUuid } from "../../common/typedUtils.ts"
+import { shortUuid } from "../../common/typedUtils.ts"
 import { mainActions, mainSelector } from "../mainSlice.ts"
-import { socket } from "../../common/clients.ts"
 import { useLocation } from "react-router-dom"
+import { socketManager } from "../../common/clients.ts"
+import { SocketMessagePayload, SocketTranscriptionPayload } from "../../common/SocketManager.ts"
 
 export function Component() {
   const location = useLocation()
-  const { toolsOpen } = useSelector(mainSelector)
+  const { toolsOpen, username } = useSelector(mainSelector)
   const { results, transcribing, interimResult, meetingCode } = useSelector(transcribeSelector)
   const { interimTranscript, finalTranscript, resetTranscript } = useSpeechRecognition()
 
   useEffect(() => {
     if (interimTranscript.trim() === "") return
     if (!interimResult) {
-      appDispatch(transcribeActions.addInterimResult(interimTranscript))
+      appDispatch(transcribeActions.addInterimResult({ text: interimTranscript, username }))
     } else {
       appDispatch(transcribeActions.updateInterimResult(interimTranscript))
     }
@@ -27,7 +28,7 @@ export function Component() {
 
   useEffect(() => {
     if (finalTranscript.trim() === "") return
-    appDispatch(addFinalResult(finalTranscript))
+    appDispatch(addFinalResult({ text: finalTranscript }))
     resetTranscript()
   }, [finalTranscript, resetTranscript])
 
@@ -74,15 +75,15 @@ export function Component() {
   }, [transcribing])
 
   useEffect(() => {
-    socket.emit("join", meetingCode)
     const url = new URL(window.location.href)
     url.searchParams.set("code", meetingCode)
     window.history.replaceState({}, "", url)
   }, [location])
 
   function newMeeting() {
+    socketManager.leaveRoom({ room: meetingCode, username })
     const newCode = shortUuid()
-    socket.emit("join", meetingCode)
+    socketManager.joinRoom({ room: newCode, username })
     const url = new URL(window.location.href)
     url.searchParams.set("code", newCode)
     window.history.replaceState({}, "", url)
@@ -91,6 +92,16 @@ export function Component() {
   }
 
   useEffect(() => {
+    socketManager.receiveTranscription((message: SocketTranscriptionPayload) => {
+      appDispatch(transcribeActions.addFinalResult(message))
+    })
+
+    setTimeout(() => {
+      socketManager.receiveMessage((message: SocketMessagePayload) => {
+        appDispatch(transcribeActions.addFinalResult({ text: message.text, username: message.username }))
+      })
+    }, 500)
+
     return () => {
       appDispatch(transcribeActions.stopTranscribing())
     }
@@ -134,7 +145,7 @@ export function Component() {
           columnDefinitions={[
             {
               header: "",
-              cell: item => formatSeconds(item.seconds),
+              cell: item => item.username,
             },
             {
               header: "",
