@@ -1,5 +1,5 @@
 import { io, Socket } from "socket.io-client"
-import { SocketJoinLeavePayload, SocketMessagePayload, SocketTranscriptionPayload } from "../../openapi-client"
+import { SocketInterimTranscriptionPayload, SocketJoinLeavePayload, SocketMessagePayload, SocketTranscriptionPayload } from "../../openapi-client"
 
 export class SocketManager {
   socket: Socket
@@ -28,6 +28,15 @@ export class SocketManager {
   receiveTranscription(callback: (message: SocketTranscriptionPayload) => void) {
     this.socket.off("transcription")
     this.socket.on("transcription", callback)
+  }
+
+  sendInterimTranscription(payload: SocketInterimTranscriptionPayload) {
+    this.socket.emit("interim_transcription", payload)
+  }
+
+  receiveInterimTranscription(callback: (message: SocketInterimTranscriptionPayload) => void) {
+    this.socket.off("interim_transcription")
+    this.socket.on("interim_transcription", callback)
   }
 
   sendMessage(payload: SocketMessagePayload) {

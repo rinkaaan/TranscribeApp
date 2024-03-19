@@ -3,10 +3,11 @@ import { RootState } from "../../common/reducers"
 import "regenerator-runtime/runtime"
 import SpeechRecognition from "react-speech-recognition"
 import { scrollToBottom, shortUuid, translate } from "../../common/typedUtils.ts"
-import store from "../../common/store.ts"
+import store, { appDispatch } from "../../common/store.ts"
 import languages from "../../common/languages.json"
 import Cookies from "js-cookie"
 import { socketManager } from "../../common/clients.ts"
+import { SocketInterimTranscriptionPayload } from "../../../openapi-client"
 
 export interface Result {
   username: string,
@@ -32,7 +33,7 @@ function getMeetingCode() {
 
 export interface TranscribeState {
   results: Array<Result>,
-  interimResult?: Result,
+  otherInterimResults: Record<string, Result>,
   transcribing: boolean,
   previousEndSeconds?: number,
   sourceLang: string,
@@ -44,7 +45,7 @@ export interface TranscribeState {
 
 const initialState: TranscribeState = {
   results: [],
-  interimResult: undefined,
+  otherInterimResults: {},
   transcribing: false,
   previousEndSeconds: undefined,
   sourceLang: validateLang("source") || "Japanese",
@@ -64,17 +65,19 @@ export const transcribeSlice = createSlice({
     resetSlice: () => {
       return initialState
     },
-    addInterimResult: (state, action: PayloadAction<{ text: string, username: string }>) => {
-      const { username, text } = action.payload
-      state.interimResult = {
-        username,
-        text,
-        translation: "",
+    updateOtherInterimResult: (state, action: PayloadAction<SocketInterimTranscriptionPayload>) => {
+      const { username, text, id } = action.payload
+      if (text) {
+        state.otherInterimResults[id!] = {
+          username: username!,
+          text: text!,
+        }
+      } else {
+        delete state.otherInterimResults[id!]
       }
-    },
-    updateInterimResult: (state, action: PayloadAction<string>) => {
-      if (!state.interimResult) return
-      state.interimResult.text = action.payload
+      if (id === "self") {
+        socketManager.sendInterimTranscription({ text })
+      }
       scrollToBottom()
     },
     startTranscribing: (state) => {
@@ -87,7 +90,7 @@ export const transcribeSlice = createSlice({
       SpeechRecognition.stopListening()
     },
     resetTranscribing: (state) => {
-      const keys = ["results", "interimResult", "transcribing", "lastResultTimestamp", "previousEndSeconds"]
+      const keys = ["results", "transcribing", "lastResultTimestamp", "previousEndSeconds"]
       keys.forEach((key) => {
         state[key] = initialState[key]
       })
@@ -95,6 +98,7 @@ export const transcribeSlice = createSlice({
     addFinalResult: (state, action: PayloadAction<{ text: string, username: string, translation?: string }>) => {
       const { username, text, translation } = action.payload
       state.results.push({ username, text, translation })
+      delete state.otherInterimResults["self"]
       scrollToBottom()
     },
     resetMeetingModalState: (state) => {
@@ -108,15 +112,14 @@ export const transcribeSlice = createSlice({
 
 export const addFinalResult = createAsyncThunk(
   "transcribe/addFinalResult",
-  async ({ text }: { text: string }, { dispatch }) => {
-    const { username } = store.getState().main
-    const { interimResult, sourceLang, destinationLang, meetingCode } = store.getState().transcribe
+  async ({ text }: { text: string }) => {
+    const { sourceLang, destinationLang } = store.getState().transcribe
     const srcLangCode = languages[sourceLang]["google_translate_code"]
     const destLangCode = languages[destinationLang]["google_translate_code"]
     const translation = await translate(text, srcLangCode, destLangCode)
-    if (!interimResult) return
-    socketManager.sendTranscription({ room: meetingCode, text, username, translation })
-    dispatch(transcribeActions.updateSlice({ interimResult: undefined }))
+    appDispatch(transcribeActions.addFinalResult({ text, translation, username: "You" }))
+    socketManager.sendTranscription({ text, translation })
+    socketManager.sendInterimTranscription({ text: "" })
     scrollToBottom()
   }
 )

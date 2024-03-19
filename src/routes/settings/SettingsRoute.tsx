@@ -11,7 +11,7 @@ import { socketManager } from "../../common/clients.ts"
 
 export function Component() {
   const { username: username0 } = useSelector(mainSelector)
-  const { sourceLang: sourceLang0, destinationLang: destinationLang0, meetingCode } = useSelector(transcribeSelector)
+  const { sourceLang: sourceLang0, destinationLang: destinationLang0 } = useSelector(transcribeSelector)
   const [sourceLang, setSourceLang] = useState<string>(sourceLang0)
   const [destinationLang, setDestinationLang] = useState<string>(destinationLang0)
   const [username, setUsername] = useState<string>(username0)
@@ -30,7 +30,6 @@ export function Component() {
     if (username !== username0) {
       appDispatch(mainActions.updateSlice({ username }))
       socketManager.sendMessage({
-        room: meetingCode,
         username: "Server",
         text: `${username0} changed their username to ${username}`,
       })

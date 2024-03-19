@@ -9,22 +9,18 @@ import { shortUuid } from "../../common/typedUtils.ts"
 import { mainActions, mainSelector } from "../mainSlice.ts"
 import { useLocation } from "react-router-dom"
 import { socketManager } from "../../common/clients.ts"
-import { SocketMessagePayload, SocketTranscriptionPayload } from "../../../openapi-client"
+import { SocketInterimTranscriptionPayload, SocketMessagePayload, SocketTranscriptionPayload } from "../../../openapi-client"
 
 export function Component() {
   const location = useLocation()
-  const { toolsOpen, username } = useSelector(mainSelector)
-  const { results, transcribing, interimResult, meetingCode } = useSelector(transcribeSelector)
+  const { toolsOpen } = useSelector(mainSelector)
+  const { results, transcribing, otherInterimResults, meetingCode } = useSelector(transcribeSelector)
   const { interimTranscript, finalTranscript, resetTranscript } = useSpeechRecognition()
 
   useEffect(() => {
     if (interimTranscript.trim() === "") return
-    if (!interimResult) {
-      appDispatch(transcribeActions.addInterimResult({ text: interimTranscript, username }))
-    } else {
-      appDispatch(transcribeActions.updateInterimResult(interimTranscript))
-    }
-  }, [interimResult, interimTranscript])
+    appDispatch(transcribeActions.updateOtherInterimResult({ text: interimTranscript, username: "You", id: "self" }))
+  }, [interimTranscript])
 
   useEffect(() => {
     if (finalTranscript.trim() === "") return
@@ -104,6 +100,10 @@ export function Component() {
       )
     })
 
+    socketManager.receiveInterimTranscription((payload: SocketInterimTranscriptionPayload) => {
+      appDispatch(transcribeActions.updateOtherInterimResult(payload))
+    })
+
     socketManager.receiveMessage((message: SocketMessagePayload) => {
       appDispatch(transcribeActions.addFinalResult({ text: message.text!, username: message.username! }))
     })
@@ -165,7 +165,10 @@ export function Component() {
               width: "100%",
             },
           ]}
-          items={interimResult ? [...results, interimResult] : results}
+          items={[
+            ...results,
+            ...Object.values(otherInterimResults),
+          ]}
           loadingText="Loading resources"
           sortingDisabled
           empty={
