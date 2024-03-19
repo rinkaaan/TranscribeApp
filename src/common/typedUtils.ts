@@ -1,6 +1,8 @@
 import { format, isToday, isYesterday, parseISO } from "date-fns"
 import { v4 } from "uuid"
 import Cookies from "js-cookie"
+import { createAsyncThunk } from "@reduxjs/toolkit"
+import store from "./store.ts"
 
 export function formatDate(inputDate?: string) {
   if (!inputDate) return null
@@ -65,12 +67,21 @@ export async function translate(text: string, sourceLang: string = "auto", targe
   }
 }
 
-export function scrollToBottom() {
+// export function scrollToBottom() {
+//   window.scroll({
+//     top: document.body.scrollHeight,
+//     behavior: "smooth",
+//   })
+// }
+
+export const scrollToBottom = createAsyncThunk("common/scrollToBottom", async () => {
+  const { autoScroll } = store.getState().transcribe
+  if (!autoScroll) return
   window.scroll({
     top: document.body.scrollHeight,
     behavior: "smooth",
   })
-}
+})
 
 export interface SelectItem {
   label: string

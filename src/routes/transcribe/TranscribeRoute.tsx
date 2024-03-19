@@ -1,11 +1,11 @@
-import { Box, Button, ContentLayout, CopyToClipboard, Header, HelpPanel, SpaceBetween, Table } from "@cloudscape-design/components"
+import { Box, Button, ContentLayout, CopyToClipboard, Header, HelpPanel, SpaceBetween, Table, Toggle } from "@cloudscape-design/components"
 import "./style.css"
 import { useSelector } from "react-redux"
 import { addFinalResult, joinMeeting, transcribeActions, transcribeSelector } from "./transcribeSlice.ts"
 import { appDispatch } from "../../common/store.ts"
 import { ReactNode, useEffect, useState } from "react"
 import { useSpeechRecognition } from "react-speech-recognition"
-import { shortUuid } from "../../common/typedUtils.ts"
+import { scrollToBottom, shortUuid } from "../../common/typedUtils.ts"
 import { mainActions, mainSelector } from "../mainSlice.ts"
 import { useLocation } from "react-router-dom"
 import { socketManager } from "../../common/clients.ts"
@@ -14,21 +14,24 @@ import { SocketInterimTranscriptionPayload, SocketMessagePayload, SocketTranscri
 export function Component() {
   const location = useLocation()
   const { toolsOpen } = useSelector(mainSelector)
-  const { results, transcribing, otherInterimResults, meetingCode } = useSelector(transcribeSelector)
+  const { results, transcribing, otherInterimResults, meetingCode, autoScroll } = useSelector(transcribeSelector)
   const { interimTranscript, finalTranscript, resetTranscript } = useSpeechRecognition()
 
   useEffect(() => {
     if (interimTranscript.trim() === "") return
     appDispatch(transcribeActions.updateOtherInterimResult({ text: interimTranscript, username: "You", id: "self" }))
+    appDispatch(scrollToBottom())
   }, [interimTranscript])
 
   useEffect(() => {
     if (finalTranscript.trim() === "") return
     appDispatch(addFinalResult({ text: finalTranscript }))
+    appDispatch(scrollToBottom())
     resetTranscript()
   }, [finalTranscript, resetTranscript])
 
   const [transcribeButton, setTranscribeButton] = useState<ReactNode>(null)
+  const [autoScrollToggle, setAutoScrollToggle] = useState<ReactNode>(null)
   const copyMeetingUrlButton = (
     <CopyToClipboard
       copyButtonText="Copy meeting URL"
@@ -79,6 +82,19 @@ export function Component() {
   }, [transcribing])
 
   useEffect(() => {
+    setAutoScrollToggle(
+      <Toggle
+        onChange={({ detail }) =>
+          appDispatch(transcribeActions.updateSlice({ autoScroll: detail.checked }))
+        }
+        checked={autoScroll}
+      >
+        Auto scroll
+      </Toggle>
+    )
+  }, [autoScroll])
+
+  useEffect(() => {
     const url = new URL(window.location.href)
     url.searchParams.set("code", meetingCode)
     window.history.replaceState({}, "", url)
@@ -98,14 +114,17 @@ export function Component() {
           translation: message.translation,
         })
       )
+      appDispatch(scrollToBottom())
     })
 
     socketManager.receiveInterimTranscription((payload: SocketInterimTranscriptionPayload) => {
       appDispatch(transcribeActions.updateOtherInterimResult(payload))
+      appDispatch(scrollToBottom())
     })
 
     socketManager.receiveMessage((message: SocketMessagePayload) => {
       appDispatch(transcribeActions.addFinalResult({ text: message.text!, username: message.username! }))
+      appDispatch(scrollToBottom())
     })
 
     return () => {
@@ -116,11 +135,12 @@ export function Component() {
   useEffect(() => {
     const tools = (
       <HelpPanel header={<h2>Actions</h2>}>
-        <SpaceBetween size="s" direction="horizontal">
+        <SpaceBetween size="s" direction="horizontal" alignItems="center">
           {transcribeButton}
           {copyMeetingUrlButton}
           {newMeetingButton}
           {joinMeetingButton}
+          {autoScrollToggle}
         </SpaceBetween>
       </HelpPanel>
     )
@@ -130,7 +150,7 @@ export function Component() {
     return () => {
       appDispatch(mainActions.updateSlice({ toolsHidden: true }))
     }
-  }, [transcribeButton])
+  }, [transcribeButton, autoScrollToggle])
 
   return (
     <ContentLayout
