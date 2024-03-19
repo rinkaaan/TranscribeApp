@@ -118,7 +118,7 @@ export const addFinalResult = createAsyncThunk(
     const destLangCode = languages[destinationLang]["google_translate_code"]
     const translation = await translate(text, srcLangCode, destLangCode)
     appDispatch(transcribeActions.addFinalResult({ text, translation, username: "You" }))
-    socketManager.sendTranscription({ text, translation })
+    socketManager.sendFinalTranscription({ text, translation })
     socketManager.sendInterimTranscription({ text: "" })
     appDispatch(scrollToBottom())
   }

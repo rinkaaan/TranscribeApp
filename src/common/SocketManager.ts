@@ -1,5 +1,5 @@
 import { io, Socket } from "socket.io-client"
-import { SocketInterimTranscriptionPayload, SocketJoinLeavePayload, SocketMessagePayload, SocketTranscriptionPayload } from "../../openapi-client"
+import { FinalTranscription, InterimTranscription, JoinLeaveMessage, Message } from "../../openapi-client"
 
 export class SocketManager {
   socket: Socket
@@ -13,37 +13,37 @@ export class SocketManager {
     })
   }
 
-  joinRoom(payload: SocketJoinLeavePayload) {
+  joinRoom(payload: JoinLeaveMessage) {
     this.socket.emit("join", payload)
   }
 
-  leaveRoom(payload: SocketJoinLeavePayload) {
+  leaveRoom(payload: JoinLeaveMessage) {
     this.socket.emit("leave", payload)
   }
 
-  sendTranscription(payload: SocketTranscriptionPayload) {
-    this.socket.emit("transcription", payload)
+  sendFinalTranscription(payload: FinalTranscription) {
+    this.socket.emit("final_transcription", payload)
   }
 
-  receiveTranscription(callback: (message: SocketTranscriptionPayload) => void) {
-    this.socket.off("transcription")
-    this.socket.on("transcription", callback)
+  receiveFinalTranscription(callback: (message: FinalTranscription) => void) {
+    this.socket.off("final_transcription")
+    this.socket.on("final_transcription", callback)
   }
 
-  sendInterimTranscription(payload: SocketInterimTranscriptionPayload) {
+  sendInterimTranscription(payload: InterimTranscription) {
     this.socket.emit("interim_transcription", payload)
   }
 
-  receiveInterimTranscription(callback: (message: SocketInterimTranscriptionPayload) => void) {
+  receiveInterimTranscription(callback: (message: InterimTranscription) => void) {
     this.socket.off("interim_transcription")
     this.socket.on("interim_transcription", callback)
   }
 
-  sendMessage(payload: SocketMessagePayload) {
+  sendMessage(payload: Message) {
     this.socket.emit("message", payload)
   }
 
-  receiveMessage(callback: (message: SocketMessagePayload) => void) {
+  receiveMessage(callback: (message: Message) => void) {
     this.socket.off("message")
     this.socket.on("message", callback)
   }
