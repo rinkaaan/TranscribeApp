@@ -1,4 +1,4 @@
-import { Button, Container, ContentLayout, Form, FormField, Header, HelpPanel, Input, Select, SpaceBetween } from "@cloudscape-design/components"
+import { Button, Container, ContentLayout, Form, FormField, Header, Input, Select, SpaceBetween } from "@cloudscape-design/components"
 import { useEffect, useState } from "react"
 import languages from "../../common/languages.json"
 import { useSelector } from "react-redux"
@@ -6,8 +6,10 @@ import { transcribeActions, transcribeSelector } from "../transcribe/transcribeS
 import { appDispatch } from "../../common/store.ts"
 import { mainActions, mainSelector } from "../mainSlice.ts"
 import Cookies from "js-cookie"
-import { ExternalLinkGroup } from "../../components/external-link-group.tsx"
 import { socketManager } from "../../common/clients.ts"
+import Tools from "./Tools.tsx"
+
+const languageOptions = Object.keys(languages).map((key) => ({ label: key, value: key }))
 
 export function Component() {
   const { username: username0 } = useSelector(mainSelector)
@@ -16,7 +18,6 @@ export function Component() {
   const [destinationLang, setDestinationLang] = useState<string>(destinationLang0)
   const [username, setUsername] = useState<string>(username0)
   const [changed, setChanged] = useState(false)
-  const languageOptions = Object.keys(languages).map((key) => ({ label: key, value: key }))
 
   function saveChanges() {
     if (sourceLang === destinationLang) {
@@ -47,36 +48,8 @@ export function Component() {
     setChanged(true)
   }
 
-  const tools = (
-    <HelpPanel
-      header={<h2>Transcribing System Audio</h2>}
-      footer={
-        <ExternalLinkGroup
-          items={[
-            {
-              href: "https://www.howtogeek.com/39532/how-to-enable-stereo-mix-in-windows-7-to-record-audio/",
-              text: "Enabling stereo mix on Windows",
-            },
-            {
-              href: "https://wikis.utexas.edu/display/comm/How+to+set+up+BlackHole+Audio+on+a+Mac",
-              text: "Setting up BlackHole on Mac",
-            },
-          ]}
-        />
-      }
-    >
-      <SpaceBetween
-        size="s"
-        direction="horizontal"
-      >
-        Although Transcribe is mainly intended for use with spoken audio received through a microphone, you can also transcribe audio from your computer by enabling stereo mix for Windows computers or
-        using something like BlackHole for Macs.
-      </SpaceBetween>
-    </HelpPanel>
-  )
-
   useEffect(() => {
-    appDispatch(mainActions.updateSlice({ tools, toolsHidden: false }))
+    appDispatch(mainActions.updateSlice({ tools: <Tools />, toolsHidden: false }))
     return () => {
       appDispatch(mainActions.updateSlice({ toolsHidden: true }))
     }
@@ -125,7 +98,6 @@ export function Component() {
             </form>
           </Container>
           <Container header={<Header variant="h2">Profile</Header>}>
-
             <FormField label="Username">
               <Input
                 value={username}

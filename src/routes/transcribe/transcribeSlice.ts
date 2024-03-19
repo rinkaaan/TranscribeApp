@@ -7,7 +7,7 @@ import store, { appDispatch } from "../../common/store.ts"
 import languages from "../../common/languages.json"
 import Cookies from "js-cookie"
 import { socketManager } from "../../common/clients.ts"
-import { SocketInterimTranscriptionPayload } from "../../../openapi-client"
+import { InterimTranscription } from "../../../openapi-client"
 
 export interface Result {
   username: string,
@@ -67,7 +67,7 @@ export const transcribeSlice = createSlice({
     resetSlice: () => {
       return initialState
     },
-    updateOtherInterimResult: (state, action: PayloadAction<SocketInterimTranscriptionPayload>) => {
+    updateOtherInterimResult: (state, action: PayloadAction<InterimTranscription>) => {
       const { username, text, id } = action.payload
       if (text) {
         state.otherInterimResults[id!] = {

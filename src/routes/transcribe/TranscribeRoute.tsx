@@ -15,7 +15,7 @@ export function Component() {
   useSocketEvents()
   useSpeechRecognitionEvents()
   const location = useLocation()
-  const { toolsOpen } = useSelector(mainSelector)
+  const { toolsOpen, username } = useSelector(mainSelector)
   const { results, otherInterimResults, meetingCode } = useSelector(transcribeSelector)
 
   useEffect(() => {
@@ -39,6 +39,7 @@ export function Component() {
           variant="h1"
           actions={!toolsOpen && (
             <SpaceBetween size="s" direction="horizontal" alignItems="center">
+              <div>Welcome {username}</div>
               <TranscribeButton />
             </SpaceBetween>
           )}
