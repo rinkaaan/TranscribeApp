@@ -3,6 +3,8 @@ import { FormEvent } from "react"
 import { joinMeeting, transcribeActions, transcribeSelector } from "./transcribeSlice.ts"
 import { useSelector } from "react-redux"
 import { appDispatch } from "../../common/store.ts"
+import { Breakpoints } from "../../common/constants.ts"
+import { mainActions } from "../mainSlice.ts"
 
 export default function JoinMeetingModal() {
   const { joinMeetingModalOpen, newMeetingCode } = useSelector(transcribeSelector)
@@ -19,6 +21,9 @@ export default function JoinMeetingModal() {
 
   function onClose() {
     appDispatch(transcribeActions.resetMeetingModalState())
+    if (window.innerWidth < Breakpoints.xSmall) {
+      appDispatch(mainActions.updateSlice({ toolsOpen: false }))
+    }
   }
 
   return (

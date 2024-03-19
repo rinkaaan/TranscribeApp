@@ -10,11 +10,14 @@ import { mainActions, mainSelector } from "../mainSlice.ts"
 import { useLocation } from "react-router-dom"
 import { socketManager } from "../../common/clients.ts"
 import { SocketInterimTranscriptionPayload, SocketMessagePayload, SocketTranscriptionPayload } from "../../../openapi-client"
+import { Breakpoints } from "../../common/constants.ts"
+import languages from "../../common/languages.json"
+import _ from "lodash"
 
 export function Component() {
   const location = useLocation()
   const { toolsOpen } = useSelector(mainSelector)
-  const { results, transcribing, otherInterimResults, meetingCode, autoScroll } = useSelector(transcribeSelector)
+  const { results, transcribing, otherInterimResults, meetingCode, autoScroll, sourceLang, destinationLang } = useSelector(transcribeSelector)
   const { interimTranscript, finalTranscript, resetTranscript } = useSpeechRecognition()
 
   useEffect(() => {
@@ -65,7 +68,7 @@ export function Component() {
             iconName="microphone-off"
             onClick={() => appDispatch(transcribeActions.stopTranscribing())}
           >
-            Stop transcribing
+            Stop {_.upperCase(languages[sourceLang]["google_translate_code"])} to {_.upperCase(languages[destinationLang]["google_translate_code"])}
           </Button>
         )
       )
@@ -75,7 +78,8 @@ export function Component() {
           iconName="microphone"
           onClick={() => appDispatch(transcribeActions.startTranscribing())}
         >
-          Start transcribing
+          {/*Start transcribing {sourceLang} to {destinationLang}*/}
+          Transcribe {_.upperCase(languages[sourceLang]["google_translate_code"])} to {_.upperCase(languages[destinationLang]["google_translate_code"])}
         </Button>
       )
     }
@@ -103,6 +107,9 @@ export function Component() {
   function newMeeting() {
     const newCode = shortUuid()
     appDispatch(joinMeeting(newCode))
+    if (window.innerWidth <= Breakpoints.xSmall) {
+      appDispatch(mainActions.updateSlice({ toolsOpen: false }))
+    }
   }
 
   useEffect(() => {
@@ -158,7 +165,7 @@ export function Component() {
         <Header
           variant="h1"
           actions={!toolsOpen && (
-            <SpaceBetween size="s" direction="horizontal">
+            <SpaceBetween size="s" direction="horizontal" alignItems="center">
               {transcribeButton}
             </SpaceBetween>
           )}
