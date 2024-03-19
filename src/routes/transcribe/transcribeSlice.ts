@@ -80,7 +80,6 @@ export const transcribeSlice = createSlice({
       if (id === "self") {
         socketManager.sendInterimTranscription({ text })
       }
-      // scrollToBottom()
     },
     startTranscribing: (state) => {
       state.transcribing = true
@@ -101,7 +100,6 @@ export const transcribeSlice = createSlice({
       const { username, text, translation } = action.payload
       state.results.push({ username, text, translation })
       delete state.otherInterimResults["self"]
-      // scrollToBottom()
     },
     resetMeetingModalState: (state) => {
       const keysToReset = ["newMeetingCode", "joinMeetingModalOpen"]
@@ -122,7 +120,6 @@ export const addFinalResult = createAsyncThunk(
     appDispatch(transcribeActions.addFinalResult({ text, translation, username: "You" }))
     socketManager.sendTranscription({ text, translation })
     socketManager.sendInterimTranscription({ text: "" })
-    // scrollToBottom()
     appDispatch(scrollToBottom())
   }
 )

@@ -1,10 +1,10 @@
 import { Box, Button, FormField, Input, Modal, SpaceBetween } from "@cloudscape-design/components"
 import { FormEvent } from "react"
-import { joinMeeting, transcribeActions, transcribeSelector } from "./transcribeSlice.ts"
+import { joinMeeting, transcribeActions, transcribeSelector } from "../transcribeSlice.ts"
 import { useSelector } from "react-redux"
-import { appDispatch } from "../../common/store.ts"
-import { Breakpoints } from "../../common/constants.ts"
-import { mainActions } from "../mainSlice.ts"
+import { appDispatch } from "../../../common/store.ts"
+import { Breakpoints } from "../../../common/constants.ts"
+import { mainActions } from "../../mainSlice.ts"
 
 export default function JoinMeetingModal() {
   const { joinMeetingModalOpen, newMeetingCode } = useSelector(transcribeSelector)

@@ -10,7 +10,7 @@ import { CrumbHandle } from "../App"
 import { prepareNotifications } from "../common/storeUtils"
 import { socketManager } from "../common/clients.ts"
 import { transcribeSelector } from "./transcribe/transcribeSlice.ts"
-import JoinMeetingModal from "./transcribe/JoinMeetingModal.tsx"
+import JoinMeetingModal from "./transcribe/components/JoinMeetingModal.tsx"
 
 const items: SideNavigationProps.Item[] = [
   {

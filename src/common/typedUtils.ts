@@ -67,13 +67,6 @@ export async function translate(text: string, sourceLang: string = "auto", targe
   }
 }
 
-// export function scrollToBottom() {
-//   window.scroll({
-//     top: document.body.scrollHeight,
-//     behavior: "smooth",
-//   })
-// }
-
 export const scrollToBottom = createAsyncThunk("common/scrollToBottom", async () => {
   const { autoScroll } = store.getState().transcribe
   if (!autoScroll) return
