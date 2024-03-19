@@ -9,7 +9,7 @@ import { shortUuid } from "../../common/typedUtils.ts"
 import { mainActions, mainSelector } from "../mainSlice.ts"
 import { useLocation } from "react-router-dom"
 import { socketManager } from "../../common/clients.ts"
-import { SocketMessagePayload, SocketTranscriptionPayload } from "../../common/SocketManager.ts"
+import { SocketMessagePayload, SocketTranscriptionPayload } from "../../../openapi-client"
 
 export function Component() {
   const location = useLocation()
@@ -95,14 +95,18 @@ export function Component() {
 
   useEffect(() => {
     socketManager.receiveTranscription((message: SocketTranscriptionPayload) => {
-      appDispatch(transcribeActions.addFinalResult(message))
+      appDispatch(
+        transcribeActions.addFinalResult({
+          text: message.text!,
+          username: message.username!,
+          translation: message.translation,
+        })
+      )
     })
 
-    setTimeout(() => {
-      socketManager.receiveMessage((message: SocketMessagePayload) => {
-        appDispatch(transcribeActions.addFinalResult({ text: message.text, username: message.username }))
-      })
-    }, 3000)
+    socketManager.receiveMessage((message: SocketMessagePayload) => {
+      appDispatch(transcribeActions.addFinalResult({ text: message.text!, username: message.username! }))
+    })
 
     return () => {
       appDispatch(transcribeActions.stopTranscribing())

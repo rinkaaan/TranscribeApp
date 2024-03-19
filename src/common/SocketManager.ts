@@ -1,22 +1,5 @@
 import { io, Socket } from "socket.io-client"
-
-export interface SocketTranscriptionPayload {
-  room: string
-  username: string
-  text: string
-  translation: string
-}
-
-export interface SocketJoinLeavePayload {
-  room: string
-  username: string
-}
-
-export interface SocketMessagePayload {
-  room: string
-  username: string
-  text: string
-}
+import { SocketJoinLeavePayload, SocketMessagePayload, SocketTranscriptionPayload } from "../../openapi-client"
 
 export class SocketManager {
   socket: Socket

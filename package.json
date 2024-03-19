@@ -10,7 +10,8 @@
     "lint:fix": "eslint --fix --ext ts,tsx . --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview --host --port 34203",
     "prepare": "husky",
-    "restart": "npm run build && npm run preview"
+    "restart": "npm run build && npm run preview",
+    "gen:openapi": "./scripts/gen.sh"
   },
   "dependencies": {
     "@cloudscape-design/components": "^3.0.512",
