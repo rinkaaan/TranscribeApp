@@ -8,12 +8,14 @@ import { mainActions, mainSelector } from "../mainSlice.ts"
 import Cookies from "js-cookie"
 import { socketManager } from "../../common/clients.ts"
 import Tools from "./Tools.tsx"
+import { useNavigate } from "react-router-dom"
 
 const languageOptions = Object.keys(languages).map((key) => ({ label: key, value: key }))
 
 export function Component() {
+  const navigate = useNavigate()
   const { username: username0 } = useSelector(mainSelector)
-  const { sourceLang: sourceLang0, destinationLang: destinationLang0 } = useSelector(transcribeSelector)
+  const { sourceLang: sourceLang0, destinationLang: destinationLang0, meetingCode } = useSelector(transcribeSelector)
   const [sourceLang, setSourceLang] = useState<string>(sourceLang0)
   const [destinationLang, setDestinationLang] = useState<string>(destinationLang0)
   const [username, setUsername] = useState<string>(username0)
@@ -63,10 +65,19 @@ export function Component() {
     >
       <Form
         actions={
-          <Button
-            disabled={!changed}
-            onClick={saveChanges}
-          >Save changes</Button>
+          <SpaceBetween size="xs" direction="horizontal">
+            <Button
+              variant="link"
+              onClick={() => navigate(`/transcribe?code=${meetingCode}`)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              disabled={!changed}
+              onClick={saveChanges}
+            >Save changes</Button>
+          </SpaceBetween>
         }
       >
         <SpaceBetween size="l">
