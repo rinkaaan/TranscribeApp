@@ -82,7 +82,7 @@ export default function MainLayout() {
   }, [])
 
   if (location.pathname === "/") {
-    return <Navigate to="/media" replace/>
+    return <Navigate to="/transcribe" replace/>
   } else {
     return (
       <Fragment>
