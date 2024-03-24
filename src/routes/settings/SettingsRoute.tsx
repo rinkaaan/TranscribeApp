@@ -36,6 +36,7 @@ export function Component() {
         username: "Server",
         text: `${username0} changed their username to ${username}`,
       })
+      socketManager.updateUsername(username)
     }
     Cookies.set("sourceLang", sourceLang, { expires: 365 })
     Cookies.set("destinationLang", destinationLang, { expires: 365 })

@@ -17,6 +17,10 @@ export class SocketManager {
     this.socket.emit("join", payload)
   }
 
+  updateUsername(newUsername: string) {
+    this.socket.emit("update_username", newUsername)
+  }
+
   leaveRoom(payload: JoinLeaveMessage) {
     this.socket.emit("leave", payload)
   }
